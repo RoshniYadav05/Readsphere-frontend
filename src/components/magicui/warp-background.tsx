@@ -1,0 +1,192 @@
+//src/components/magicui/wrap-background.tsx
+"use client";
+import { cn } from "@/lib/utils";
+import { motion } from "framer-motion"; // Note: It's better to import from framer-motion
+import React, {
+  HTMLAttributes,
+  useState,
+  useEffect,
+  useCallback,
+} from "react";
+
+interface WarpBackgroundProps extends HTMLAttributes<HTMLDivElement> {
+  children: React.ReactNode;
+  perspective?: number;
+  beamsPerSide?: number;
+  beamSize?: number;
+  beamDelayMax?: number;
+  beamDelayMin?: number;
+  beamDuration?: number;
+  gridColor?: string;
+}
+
+// CHANGE 1: The Beam component now receives all its values as props.
+// It no longer calculates anything randomly itself.
+const Beam = ({
+  width,
+  x,
+  delay,
+  duration,
+  hue,
+  aspectRatio,
+}: {
+  width: string | number;
+  x: string | number;
+  delay: number;
+  duration: number;
+  hue: number;
+  aspectRatio: number;
+}) => {
+  return (
+    <motion.div
+      style={
+        {
+          "--x": `${x}`,
+          "--width": `${width}`,
+          "--aspect-ratio": `${aspectRatio}`,
+          "--background": `linear-gradient(hsl(${hue} 80% 60%), transparent)`,
+        } as React.CSSProperties
+      }
+      className={`absolute left-[var(--x)] top-0 [aspect-ratio:1/var(--aspect-ratio)] [background:var(--background)] [width:var(--width)]`}
+      initial={{ y: "100cqmax", x: "-50%" }}
+      animate={{ y: "-100%", x: "-50%" }}
+      transition={{
+        duration,
+        delay,
+        repeat: Infinity,
+        ease: "linear",
+      }}
+    />
+  );
+};
+
+export const WarpBackground: React.FC<WarpBackgroundProps> = ({
+  children,
+  perspective = 100,
+  className,
+  beamsPerSide = 3,
+  beamSize = 5,
+  beamDelayMax = 3,
+  beamDelayMin = 0,
+  beamDuration = 3,
+  gridColor = "hsl(var(--border))",
+  ...props
+}) => {
+  // CHANGE 2: Add state to track if the component has mounted on the client
+  const [isMounted, setIsMounted] = useState(false);
+
+  // CHANGE 3: Store the generated beams in state instead of useMemo
+  const [beams, setBeams] = useState<{
+    top: any[];
+    right: any[];
+    bottom: any[];
+    left: any[];
+  }>({ top: [], right: [], bottom: [], left: [] });
+
+  // CHANGE 4: All random calculations are now inside this function
+  const generateBeams = useCallback(() => {
+    const beams = [];
+    const cellsPerSide = Math.floor(100 / beamSize);
+    const step = cellsPerSide / beamsPerSide;
+
+    for (let i = 0; i < beamsPerSide; i++) {
+      const x = Math.floor(i * step);
+      const delay =
+        Math.random() * (beamDelayMax - beamDelayMin) + beamDelayMin;
+      const hue = Math.floor(Math.random() * 360);
+      const aspectRatio = Math.floor(Math.random() * 10) + 1;
+      beams.push({ x, delay, hue, aspectRatio });
+    }
+    return beams;
+  }, [beamsPerSide, beamSize, beamDelayMax, beamDelayMin]);
+
+  // CHANGE 5: Use useEffect to generate beams ONLY on the client-side
+  useEffect(() => {
+    setIsMounted(true);
+    // Generate the beams once the component has mounted
+    setBeams({
+      top: generateBeams(),
+      right: generateBeams(),
+      bottom: generateBeams(),
+      left: generateBeams(),
+    });
+  }, [generateBeams]);
+
+  return (
+    <div className={cn("relative rounded border p-20", className)} {...props}>
+      {/* CHANGE 6: Conditionally render the entire animation div */}
+      {isMounted && (
+        <div
+          style={
+            {
+              "--perspective": `${perspective}px`,
+              "--grid-color": gridColor,
+              "--beam-size": `${beamSize}%`,
+            } as React.CSSProperties
+          }
+          className={
+            "pointer-events-none absolute left-0 top-0 size-full overflow-hidden [clip-path:inset(0)] [container-type:size] [perspective:var(--perspective)] [transform-style:preserve-3d]"
+          }
+        >
+          {/* top side */}
+          <div className="absolute [transform-style:preserve-3d] [background-size:var(--beam-size)_var(--beam-size)] [background:linear-gradient(var(--grid-color)_0_1px,_transparent_1px_var(--beam-size))_50%_-0.5px_/var(--beam-size)_var(--beam-size),linear-gradient(90deg,_var(--grid-color)_0_1px,_transparent_1px_var(--beam-size))_50%_50%_/var(--beam-size)_var(--beam-size)] [container-type:inline-size] [height:100cqmax] [transform-origin:50%_0%] [transform:rotateX(-90deg)] [width:100cqi]">
+            {beams.top.map((beam, index) => (
+              <Beam
+                key={`top-${index}`}
+                width={`${beamSize}%`}
+                x={`${beam.x * beamSize}%`}
+                delay={beam.delay}
+                duration={beamDuration}
+                hue={beam.hue}
+                aspectRatio={beam.aspectRatio}
+              />
+            ))}
+          </div>
+          {/* bottom side */}
+          <div className="absolute top-full [transform-style:preserve-3d] [background-size:var(--beam-size)_var(--beam-size)] [background:linear-gradient(var(--grid-color)_0_1px,_transparent_1px_var(--beam-size))_50%_-0.5px_/var(--beam-size)_var(--beam-size),linear-gradient(90deg,_var(--grid-color)_0_1px,_transparent_1px_var(--beam-size))_50%_50%_/var(--beam-size)_var(--beam-size)] [container-type:inline-size] [height:100cqmax] [transform-origin:50%_0%] [transform:rotateX(-90deg)] [width:100cqi]">
+            {beams.bottom.map((beam, index) => (
+              <Beam
+                key={`bottom-${index}`}
+                width={`${beamSize}%`}
+                x={`${beam.x * beamSize}%`}
+                delay={beam.delay}
+                duration={beamDuration}
+                hue={beam.hue}
+                aspectRatio={beam.aspectRatio}
+              />
+            ))}
+          </div>
+          {/* left side */}
+          <div className="absolute left-0 top-0 [transform-style:preserve-3d] [background-size:var(--beam-size)_var(--beam-size)] [background:linear-gradient(var(--grid-color)_0_1px,_transparent_1px_var(--beam-size))_50%_-0.5px_/var(--beam-size)_var(--beam-size),linear-gradient(90deg,_var(--grid-color)_0_1px,_transparent_1px_var(--beam-size))_50%_50%_/var(--beam-size)_var(--beam-size)] [container-type:inline-size] [height:100cqmax] [transform-origin:0%_0%] [transform:rotate(90deg)_rotateX(-90deg)] [width:100cqh]">
+            {beams.left.map((beam, index) => (
+              <Beam
+                key={`left-${index}`}
+                width={`${beamSize}%`}
+                x={`${beam.x * beamSize}%`}
+                delay={beam.delay}
+                duration={beamDuration}
+                hue={beam.hue}
+                aspectRatio={beam.aspectRatio}
+              />
+            ))}
+          </div>
+          {/* right side */}
+          <div className="absolute right-0 top-0 [transform-style:preserve-3d] [background-size:var(--beam-size)_var(--beam-size)] [background:linear-gradient(var(--grid-color)_0_1px,_transparent_1px_var(--beam-size))_50%_-0.5px_/var(--beam-size)_var(--beam-size),linear-gradient(90deg,_var(--grid-color)_0_1px,_transparent_1px_var(--beam-size))_50%_50%_/var(--beam-size)_var(--beam-size)] [container-type:inline-size] [height:100cqmax] [width:100cqh] [transform-origin:100%_0%] [transform:rotate(-90deg)_rotateX(-90deg)]">
+            {beams.right.map((beam, index) => (
+              <Beam
+                key={`right-${index}`}
+                width={`${beamSize}%`}
+                x={`${beam.x * beamSize}%`}
+                delay={beam.delay}
+                duration={beamDuration}
+                hue={beam.hue}
+                aspectRatio={beam.aspectRatio}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+      <div className="relative">{children}</div>
+    </div>
+  );
+};
