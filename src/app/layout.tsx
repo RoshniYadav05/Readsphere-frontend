@@ -54,11 +54,15 @@ export default function RootLayout({
         <body className={inter.className}>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
             <div className="flex flex-col min-h-screen">
-              {!isAuthPage && <Header />}
-              <main className="flex-grow">{children}</main>
-              {!isAuthPage && <Footer />}
+              <div suppressHydrationWarning>
+  {!isAuthPage && <Header />}
+  <main className="flex-grow">{children}</main>
+  {!isAuthPage && <Footer />}
+  <ChatbotWidget />
+</div>
+
             </div>
-            <ChatbotWidget />
+            
           </ThemeProvider>
         </body>
       </html>

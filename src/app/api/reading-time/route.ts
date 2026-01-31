@@ -1,35 +1,34 @@
-// app/api/reading-time/route.ts
-import { NextRequest } from 'next/server';
-import { createClient } from '@/utils/supabase/server';
-import { cookies } from 'next/headers';
+import { NextRequest, NextResponse } from "next/server"
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
-    const { book_slug, duration_seconds, user_id } = body;
+    const body = await req.json()
+    const { book_slug, duration_seconds, start_time, end_time } = body
 
-    if (!book_slug || !duration_seconds) {
-      return new Response(JSON.stringify({ error: 'Invalid payload' }), { status: 400 });
+    if (!book_slug || !duration_seconds || !start_time || !end_time) {
+      return NextResponse.json(
+        { error: "Invalid payload" },
+        { status: 400 }
+      )
     }
 
-    const supabase = createClient(cookies());
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { data, error } = await (await supabase)
-      .from('reading_time')
-      .insert({
-        book_slug,
-        duration_seconds,
-        user_id: user_id || null,
-      });
-
-    if (error) {
-      console.error('Supabase insert error:', error);
-      return new Response(JSON.stringify({ error }), { status: 500 });
-    }
-
-    return new Response(JSON.stringify({ ok: true }), { status: 200 });
+    // 🧠 Just echo back — frontend/dashboard will store & display
+    return NextResponse.json({
+      ok: true,
+      readingSession: {
+        book: book_slug,
+        minutes: Math.round(duration_seconds / 60),
+        start: start_time,
+        end: end_time,
+        date: new Date().toISOString().split("T")[0],
+      },
+    })
   } catch (err) {
-    console.error('API error', err);
-    return new Response(JSON.stringify({ error: 'Server error' }), { status: 500 });
+    console.error("API error", err)
+    return NextResponse.json(
+      { error: "Server error" },
+      { status: 500 }
+    )
   }
 }
+

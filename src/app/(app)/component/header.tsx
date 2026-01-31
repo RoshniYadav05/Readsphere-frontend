@@ -1,3 +1,4 @@
+//src/app/(app)/component/header
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -11,6 +12,7 @@ import {
   SignedOut,
   SignInButton,
   UserButton,
+  useUser, // ⭐ ADDED
 } from "@clerk/nextjs";
 import { Search } from "lucide-react";
 import Image from "next/image";
@@ -31,6 +33,14 @@ export default function Header() {
   const [isFocused, setIsFocused] = useState(false);
 
   const router = useRouter();
+
+  // ⭐ ADMIN LOGIC ADDED
+  const { user } = useUser();
+  const ADMIN_EMAIL = "try.roshniyadav@gmail.com"; // <-- replace with your Gmail
+
+  const isAdmin = user?.emailAddresses?.some(
+    (email) => email.emailAddress === ADMIN_EMAIL
+  );
 
   const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
 
@@ -95,17 +105,18 @@ export default function Header() {
           {/* DESKTOP NAVIGATION */}
           <div className="hidden sm:flex items-center space-x-4">
             
-
             {/* ⭐ AMAZON-STYLE SEARCH BAR */}
             <div className="relative w-96 ml-5">
               <form onSubmit={handleSearch}>
-                <div className="
+                <div
+                  className="
                   flex items-center 
                   bg-white text-black 
                   rounded-md shadow-md 
                   border border-gray-300
                   overflow-hidden
-                ">
+                "
+                >
                   
                   <Input
                     type="search"
@@ -127,13 +138,15 @@ export default function Header() {
 
               {/* ⭐ AMAZON-STYLE DROPDOWN WITH IMAGE */}
               {isFocused && suggestions.length > 0 && (
-                <div className="
+                <div
+                  className="
                   absolute left-0 right-0 mt-1 
                   bg-white text-black 
                   rounded-md shadow-lg z-50 
                   border border-gray-300
                   max-h-80 overflow-auto
-                ">
+                "
+                >
                   {suggestions.map((book) => (
                     <div
                       key={book.id}
@@ -150,19 +163,24 @@ export default function Header() {
                       }}
                     >
                       <Image
-  src={book.cover_image && book.cover_image.trim() !== "" 
-        ? book.cover_image 
-        : "/placeholder-cover.png"}
-  alt={book.book_title || "Book Cover"}
-  width={40}
-  height={60}
-  unoptimized
-/>
-
+                        src={
+                          book.cover_image && book.cover_image.trim() !== ""
+                            ? book.cover_image
+                            : "/placeholder-cover.png"
+                        }
+                        alt={book.book_title || "Book Cover"}
+                        width={40}
+                        height={60}
+                        unoptimized
+                      />
 
                       <div>
-                        <p className="font-medium text-sm">{book.book_title}</p>
-                        <p className="text-xs text-gray-600">{book.author}</p>
+                        <p className="font-medium text-sm">
+                          {book.book_title}
+                        </p>
+                        <p className="text-xs text-gray-600">
+                          {book.author}
+                        </p>
                       </div>
                     </div>
                   ))}
@@ -170,41 +188,53 @@ export default function Header() {
               )}
             </div>
 
-
             {/* NAV LINKS */}
             <nav>
               <ul className="flex space-x-4">
-                <li><Link href="/dashboard">Dashboard</Link></li>
-                <li><Link href="/recommendations">Top Picks</Link></li>
-                <li><Link href="/about">About</Link></li>
+                <li>
+                  <Link href="/dashboard">Dashboard</Link>
+                </li>
+
+                {/* ⭐ ADMIN BUTTON */}
+                {isAdmin && (
+                  <li>
+                    <Link
+                      href="/admin"
+                      className="text-white font-semibold "
+                    >
+                      Admin
+                    </Link>
+                  </li>
+                )}
+
+                <li>
+                  <Link href="/recommendations">Top Picks</Link>
+                </li>
+                <li>
+                  <Link href="/about">About</Link>
+                </li>
               </ul>
             </nav>
-
-            
 
             {/* AUTH */}
             <SignedOut>
               <SignInButton>
                 <Button
-  variant="outline"
-  className="text-black hover:bg-transparent hover:text-black"
->
-  Login
-</Button>
-
+                  variant="outline"
+                  className="text-black hover:bg-transparent hover:text-black"
+                >
+                  Login
+                </Button>
               </SignInButton>
             </SignedOut>
             <SignedIn>
               <UserButton />
             </SignedIn>
-
           </div>
         </div>
 
-
         {/* MOBILE MENU — UNCHANGED */}
         {/* (We can apply Amazon-style UI here too if you want) */}
-
       </div>
     </header>
   );

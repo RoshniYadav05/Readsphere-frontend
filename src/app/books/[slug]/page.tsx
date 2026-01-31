@@ -7,6 +7,8 @@ import Image from "next/image"
 import { notFound } from "next/navigation"
 import Link from "next/link"
 import { BookOpen, ArrowLeft } from "lucide-react"
+/* 🔹 CLIENT-ONLY BUBBLE BACKGROUND */
+import BubbleBackground from "./../bubble-bg"
 
 type Book = {
   id: string
@@ -60,6 +62,7 @@ export default async function BookPage({
 
   return (
     <main className="min-h-screen bg-slate-950 text-slate-200 py-12 px-4 md:px-8">
+      <BubbleBackground/>
       <div className="max-w-6xl mx-auto space-y-12">
 
         {/* ✅ BOOK OPEN TRACKING */}
