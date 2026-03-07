@@ -1,82 +1,95 @@
-"use client"
+//src/app/books/[slug]/BookTracker.tsx
+"use client";
 
-import { useEffect, useRef } from "react"
-import { usePathname } from "next/navigation"
+import { useEffect, useRef } from "react";
+import { usePathname } from "next/navigation";
+import { createClient } from "@/utils/supabase/client";
+import { useUser } from "@clerk/nextjs";
 
-export default function BookTracker({ bookId }: { bookId: string }) {
-  const sessionStart = useRef<Date | null>(null)
-  const pathname = usePathname()
+export default function BookTracker({
+  bookId,
+  bookTitle,
+}: {
+  bookId: string
+  bookTitle: string
+}) {
+  const supabase = createClient();
+  const pathname = usePathname();
+  const { user } = useUser();
+
+  const startTimeRef = useRef<Date | null>(null);
+  const sessionSavedRef = useRef(false);
 
   useEffect(() => {
-    if (!bookId) return
 
-    // 🟢 Start timer when book page loads
-    sessionStart.current = new Date()
+    if (!bookTitle || !user) return;
 
-    const endSession = () => {
-      if (!sessionStart.current) return
+    console.log("📚 Tracker started");
 
-      const startTime = sessionStart.current
-      const endTime = new Date()
+    startTimeRef.current = new Date();
+    sessionSavedRef.current = false;
 
-      // ✅ DEFINE minutes FIRST
+    const saveSession = async () => {
+
+      if (!startTimeRef.current) return;
+      if (sessionSavedRef.current) return;
+
+      const startTime = startTimeRef.current;
+      const endTime = new Date();
+
       const minutes = Math.max(
         1,
         Math.round(
           (endTime.getTime() - startTime.getTime()) / 60000
         )
-      )
+      );
 
-      // 🧪 Debug log (now safe)
-      console.log("📚 Reading session ended", {
-        book: bookId,
-        minutes,
-        start: startTime.toLocaleTimeString(),
-        end: endTime.toLocaleTimeString(),
-      })
+      console.log("📚 Saving reading session...");
 
-      // 💾 Save session for dashboard (localStorage queue)
-      const session = {
-        book: bookId,
-        minutes,
-        start: startTime.toLocaleTimeString(),
-        end: endTime.toLocaleTimeString(),
-        date: new Date().toISOString().split("T")[0],
+      const { error } = await supabase
+        .from("reading_sessions")
+        .insert({
+  user_id: user.id,
+  book_id: bookId,
+  book_title: bookTitle,
+
+          reading_date: startTime.toLocaleDateString("en-CA", {
+            timeZone: "Asia/Kolkata",
+          }),
+
+          start_time: startTime.toLocaleString("sv-SE", {
+  timeZone: "Asia/Kolkata",
+}),
+end_time: endTime.toLocaleString("sv-SE", {
+  timeZone: "Asia/Kolkata",
+}),
+
+          pages_read: 1,
+          duration_minutes: minutes,
+        });
+
+      if (error) {
+        console.log("❌ DB ERROR:", error);
+      } else {
+        console.log("✅ Reading session saved");
+        sessionSavedRef.current = true;
       }
 
-      const key = "readsphere-reading-sessions"
-      const existing = JSON.parse(
-        localStorage.getItem(key) || "[]"
-      )
+      startTimeRef.current = null;
+    };
 
-      existing.unshift(session)
-      localStorage.setItem(key, JSON.stringify(existing))
+    const handleBeforeUnload = () => {
+      saveSession();
+    };
 
-      // 🔁 Optional API call (future backend sync)
-      fetch("/api/reading-time", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          book_slug: bookId,
-          duration_seconds: minutes * 60,
-          start_time: startTime.toISOString(),
-          end_time: endTime.toISOString(),
-        }),
-      })
-
-      // Prevent double fire
-      sessionStart.current = null
-    }
-
-    // 🔴 User refreshes / closes tab
-    window.addEventListener("beforeunload", endSession)
+    window.addEventListener("beforeunload", handleBeforeUnload);
 
     return () => {
-      // 🔴 User navigates away (route change)
-      endSession()
-      window.removeEventListener("beforeunload", endSession)
-    }
-  }, [bookId, pathname])
+      saveSession();
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
 
-  return null
+  }, [bookTitle, pathname, user]);
+
+  return null;
 }

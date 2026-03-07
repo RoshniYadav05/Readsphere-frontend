@@ -1,8 +1,18 @@
+// src/app/api/chat/route.ts
 import { NextResponse } from "next/server"
+
+export const runtime = "nodejs"
 
 export async function POST(req: Request) {
   try {
     const { messages } = await req.json()
+
+    if (!process.env.OPENROUTER_API_KEY) {
+      return NextResponse.json(
+        { error: "Missing OpenRouter API key" },
+        { status: 500 }
+      )
+    }
 
     const response = await fetch(
       "https://openrouter.ai/api/v1/chat/completions",
@@ -15,7 +25,7 @@ export async function POST(req: Request) {
           "X-Title": "ReadSphere",
         },
         body: JSON.stringify({
-          model: "mistralai/mistral-7b-instruct:free",
+          model: "meta-llama/llama-3.1-8b-instruct",
           temperature: 0.6,
           messages: [
             {
@@ -26,19 +36,9 @@ You are ReadSphere AI, an expert reading assistant.
 Rules:
 - Be friendly, concise, and practical
 - Give clear summaries and actionable reading advice
-- When recommending books, ALWAYS include a JSON block at the end like this:
+- When recommending books, ALWAYS include a JSON block
 
-BOOKS:
-[
-  {
-    "title": "Book title",
-    "author": "Author name",
-    "reason": "Why this book is recommended"
-  }
-]
-
-- If no books are recommended, DO NOT include the BOOKS block
-- Use simple, human language
+If no books are recommended, DO NOT include the BOOKS block.
               `,
             },
             ...messages,
@@ -49,11 +49,19 @@ BOOKS:
 
     const data = await response.json()
 
+    if (!response.ok) {
+      console.error("OpenRouter error:", data)
+      return NextResponse.json(
+        { error: data?.error?.message || "OpenRouter error" },
+        { status: response.status }
+      )
+    }
+
     return NextResponse.json({
-      reply: data.choices?.[0]?.message?.content || "No response",
+      reply: data.choices[0].message.content,
     })
-  } catch (error) {
-    console.error(error)
+  } catch (err) {
+    console.error("Chat API crash:", err)
     return NextResponse.json(
       { error: "AI failed to respond" },
       { status: 500 }

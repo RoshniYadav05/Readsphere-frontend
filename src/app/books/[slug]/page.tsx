@@ -6,7 +6,7 @@ import { cookies } from "next/headers"
 import Image from "next/image"
 import { notFound } from "next/navigation"
 import Link from "next/link"
-import { BookOpen, ArrowLeft } from "lucide-react"
+import { BookOpen, ArrowLeft, Star } from "lucide-react"
 /* 🔹 CLIENT-ONLY BUBBLE BACKGROUND */
 import BubbleBackground from "./../bubble-bg"
 
@@ -18,8 +18,8 @@ type Book = {
   f_page: string
   slug: string
   description: string | null
+  rating: number
 }
-
 export async function generateMetadata({
   params,
 }: {
@@ -28,6 +28,7 @@ export async function generateMetadata({
   const cookieStore = cookies()
   const supabase = createClient(cookieStore)
 
+  
   const { data: book } = await supabase
     .from("books")
     .select("book_title")
@@ -66,7 +67,10 @@ export default async function BookPage({
       <div className="max-w-6xl mx-auto space-y-12">
 
         {/* ✅ BOOK OPEN TRACKING */}
-        <BookTracker bookId={book.id} />
+        <BookTracker 
+  bookId={book.id}
+  bookTitle={book.book_title}
+/>
 
         {/* Header */}
         <div className="text-center space-y-4">
@@ -108,6 +112,10 @@ export default async function BookPage({
                 {book.description}
               </p>
             )}
+             <div className="flex items-center gap-1 text-sm text-slate-300">
+                      {book.rating}
+                      <Star className="h-4 w-4 fill-yellow-500 text-yellow-500" />
+                    </div>
 
             {/* Action Buttons */}
             <div className="flex flex-wrap gap-4 pt-4">

@@ -1,18 +1,22 @@
+//src/app/books/reader/[slug]/page.tsx
 import ReaderClient from './ReaderClient';
 import { createClient } from '@/utils/supabase/server';
 import { cookies } from 'next/headers';
+import BookTracker from '../../[slug]/BookTracker';
 
 export default async function ReaderPage({
   params,
 }: {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }) {
+
+  const { slug } = await params;
   const supabase = createClient(cookies());
 
   const { data: book } = await supabase
     .from('books')
-    .select('f_page')
-    .eq('slug', params.slug)
+    .select('f_page, book_title')
+    .eq('slug', slug)
     .single();
 
   if (!book) {
@@ -21,7 +25,11 @@ export default async function ReaderPage({
 
   return (
     <div className="w-full h-screen bg-black">
-      <ReaderClient pdfUrl={book.f_page} slug={params.slug} />
+      <BookTracker 
+  bookId={book.id}
+  bookTitle={book.book_title}
+/>
+      <ReaderClient pdfUrl={book.f_page} slug={slug} />
     </div>
   );
 }

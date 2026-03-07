@@ -1,3 +1,4 @@
+//src/app/(app)/recommendations/page.tsx
 "use client"
 
 import Image from "next/image"
