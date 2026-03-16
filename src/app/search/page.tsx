@@ -25,7 +25,10 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
     .from('books')
     .select('*')
     // This now searches BOOK_TITLE, GENRE, AND BOOK_AUTHOR for the query term.
-    .or(`BOOK_TITLE.ilike.%${query}%,GENRE.ilike.%${query}%,BOOK_AUTHOR.ilike.%${query}%`);
+    .or(
+  `book_title.ilike.%${query}%,author.ilike.%${query}%,genre.ilike.%${query}%,description.ilike.%${query}%`
+)
+.limit(20)
 
   if (error) {
     console.error('Search error:', error);
@@ -34,9 +37,13 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold text-center mb-10 text-white">
-        Search Results for &quot;{query}&quot;
-      </h1>
+      <h1 className="text-3xl font-bold text-center mb-4 text-white">
+  Search Results for &quot;{query}&quot;
+</h1>
+
+<p className="text-center text-gray-400 mb-6">
+  {books.length} results found
+</p>
       
       {books.length === 0 ? (
         <p className="text-center text-gray-400">No books found matching your search.</p>
