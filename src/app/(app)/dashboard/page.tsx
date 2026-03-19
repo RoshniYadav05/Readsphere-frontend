@@ -88,6 +88,7 @@ export default function Dashboard() {
   const [goalInput, setGoalInput] = useState("")
 
   const [sessions, setSessions] = useState<ReadingSession[]>([])
+  const [savingGenres, setSavingGenres] = useState(false)
   console.log("Sessions:", sessions)
   const [streak, setStreak] = useState(0)
 
@@ -194,7 +195,42 @@ export default function Dashboard() {
       }
     })
   }
-  
+  // 💾 SAVE FAVORITE GENRES TO DATABASE
+const saveFavoriteGenres = async () => {
+
+  if (!user || !data) return
+
+  try {
+
+    setSavingGenres(true)
+
+    const { error } = await supabase
+      .from("user_preferences")
+      .upsert({
+        user_id: user.id,
+        favorite_genres: data.favoriteGenres
+      })
+
+    if (error) {
+      console.log("Save genres error:", error)
+      alert("Failed to save genres")
+      return
+    }
+
+    alert("Favorite genres saved successfully!")
+
+  } catch (err) {
+
+    console.log(err)
+    alert("Something went wrong")
+
+  } finally {
+
+    setSavingGenres(false)
+
+  }
+
+}
   // 📊 FETCH READING SESSIONS
 useEffect(() => {
   const fetchSessions = async () => {
@@ -508,6 +544,16 @@ const getActivityLevel = (date: string) => {
                     )
                   })}
                 </div>
+                {/* SAVE BUTTON */}
+<div className="mt-4">
+  <button
+    onClick={saveFavoriteGenres}
+    disabled={savingGenres}
+    className="bg-purple-500 px-4 py-2 rounded hover:bg-purple-600 text-white"
+  >
+    {savingGenres ? "Saving..." : "Save Genres"}
+  </button>
+</div>
               </CardContent>
             </Card>
           </motion.div>

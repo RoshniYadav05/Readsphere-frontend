@@ -189,32 +189,41 @@ export default function Header() {
             </div>
 
             {/* NAV LINKS */}
-            <nav>
-              <ul className="flex space-x-4">
-                <li>
-                  <Link href="/dashboard">Dashboard</Link>
-                </li>
+<nav>
+  <ul className="flex space-x-4">
 
-                {/* ⭐ ADMIN BUTTON */}
-                {isAdmin && (
-                  <li>
-                    <Link
-                      href="/admin"
-                      className="text-white font-semibold "
-                    >
-                      Admin
-                    </Link>
-                  </li>
-                )}
+    <li>
+      <Link href="/my-books" className="hover:text-purple-200 transition">My Books</Link>
+      
+    </li>
 
-                <li>
-                  <Link href="/recommendations">Top Picks</Link>
-                </li>
-                <li>
-                  <Link href="/about">About</Link>
-                </li>
-              </ul>
-            </nav>
+    <li>
+      <Link href="/dashboard" className="hover:text-purple-200 transition">Dashboard</Link>
+      
+    </li>
+
+    {/* ⭐ ADMIN BUTTON */}
+    {isAdmin && (
+      <li>
+        <Link
+          href="/admin"
+          className="text-white font-semibold" 
+        >
+          Admin
+        </Link>
+      </li>
+    )}
+
+    <li>
+      <Link href="/recommendations" className="hover:text-purple-200 transition">Top Picks</Link>
+    </li>
+
+    <li>
+      <Link href="/about" className="hover:text-purple-200 transition">About</Link>
+    </li>
+
+  </ul>
+</nav>
 
             {/* AUTH */}
             <SignedOut>

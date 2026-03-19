@@ -1,14 +1,21 @@
 //src/app/api/books/route.js
-export async function GET(req) {
+import { NextResponse } from "next/server";
+import { createClient } from "@supabase/supabase-js";
 
-  const { searchParams } = new URL(req.url)
-  const query = searchParams.get("q")
+export async function GET() {
 
-  const res = await fetch(
-    `https://www.googleapis.com/books/v1/volumes?q=${query}&maxResults=20`
-  )
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  );
 
-  const data = await res.json()
+  const { data, error } = await supabase
+    .from("books")
+    .select("id, slug, book_title, author, cover_image");
 
-  return Response.json(data.items)
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  return NextResponse.json(data);
 }

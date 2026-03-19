@@ -7,6 +7,8 @@ import Image from "next/image"
 import { notFound } from "next/navigation"
 import Link from "next/link"
 import { BookOpen, ArrowLeft, Star } from "lucide-react"
+import MarkCompletedButton from "@/components/MarkCompletedButton"
+import ShelfButtons from "@/components/ShelfButtons"
 /* 🔹 CLIENT-ONLY BUBBLE BACKGROUND */
 import BubbleBackground from "./../bubble-bg"
 
@@ -133,7 +135,15 @@ export default async function BookPage({
                 <ArrowLeft className="h-4 w-4" />
                 Back to All Books
               </Link>
-            </div>
+              
+            {/* ✅ NEW BUTTON */}
+  <MarkCompletedButton
+    bookId={book.id}
+    bookTitle={book.book_title}
+  />
+
+</div>
+
           </div>
         </div>
       </div>

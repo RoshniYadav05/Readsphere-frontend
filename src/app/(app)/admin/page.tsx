@@ -1,3 +1,4 @@
+//src/app/(app)/admin/page.tsx
 "use client"
 
 import type React from "react"

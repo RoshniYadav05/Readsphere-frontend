@@ -218,6 +218,45 @@ export default function Home() {
         </div>
       </section>
       </WarpBackground>
+
+
+      {/* Mood Based Recommendation Feature */}
+<section className="py-20 bg-[#060B1D]">
+  <div className="container mx-auto px-4 text-center">
+
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.8 }}
+    >
+
+      <div className="flex justify-center mb-4">
+        <Brain className="h-10 w-10 text-purple-400" />
+      </div>
+
+      <h2 className="text-3xl md:text-4xl font-bold mb-4">
+        Find Books Based on Your Mood
+      </h2>
+
+      <p className="text-gray-400 max-w-2xl mx-auto mb-8">
+        Feeling happy, stressed, curious, or relaxed?  
+        Let ReadSphere recommend the perfect book based on your current mood.
+      </p>
+
+      <Link href="/mood-recommendation">
+        <Button
+          size="lg"
+          className="bg-purple-600 hover:bg-purple-700 px-8 py-6 text-lg"
+        >
+          Discover Books by Mood 😊
+        </Button>
+      </Link>
+
+    </motion.div>
+
+  </div>
+</section>
       
       <section className="py-16 bg-[#080D20] overflow-hidden">
         <div className="container mx-auto px-4">
@@ -296,6 +335,7 @@ export default function Home() {
         ))}
 
         <div className="container mx-auto px-4 relative z-10">
+          
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">How ReadSphere Works</h2>
             <p className="text-gray-400 max-w-2xl mx-auto">

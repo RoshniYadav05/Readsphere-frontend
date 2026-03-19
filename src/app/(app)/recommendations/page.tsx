@@ -8,6 +8,8 @@ import { motion } from "framer-motion"
 import { Star, Loader, BookOpen } from "lucide-react"
 import { SignedIn } from "@clerk/nextjs"
 import { Button } from "@/components/ui/button"
+import { useUser } from "@clerk/nextjs"
+import { createClient } from "@/utils/supabase/client"
 /* 🔹 CLIENT-ONLY BUBBLE BACKGROUND */
 import BubbleBackground from "../../books/bubble-bg"
 interface Book {
@@ -43,24 +45,57 @@ const cardVariants = {
 }
 
 export default function Recommendations() {
+  const { user } = useUser()
+const supabase = createClient()
   const [books, setBooks] = useState<Book[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const fetchPopularBooks = async () => {
-      try {
-        const response = await fetch("/api/recommend/popularity")
-        const data = await response.json()
-        setBooks(data.popular_books || [])
-      } catch (error) {
-        console.error("Error fetching books:", error)
-      } finally {
-        setLoading(false)
+
+  const fetchRecommendations = async () => {
+
+    if (!user) return
+
+    try {
+
+      // 1️⃣ Get user's favorite genres
+      const { data: pref } = await supabase
+        .from("user_preferences")
+        .select("favorite_genres")
+        .eq("user_id", user.id)
+        .single()
+
+      const genres = pref?.favorite_genres || []
+
+      if (!genres.length) {
+        setBooks([])
+        return
       }
+
+      // 2️⃣ Fetch books from those genres
+      const { data: booksData } = await supabase
+        .from("books")
+        .select("*")
+        .in("genre", genres)
+        .limit(20)
+
+      setBooks(booksData || [])
+
+    } catch (error) {
+
+      console.error("Error fetching recommendations:", error)
+
+    } finally {
+
+      setLoading(false)
+
     }
 
-    fetchPopularBooks()
-  }, [])
+  }
+
+  fetchRecommendations()
+
+}, [user])
 
   if (loading) {
     return (
@@ -96,8 +131,12 @@ export default function Recommendations() {
               </h1>
             </div>
             <p className="text-lg text-slate-400 max-w-3xl mx-auto">
-              Handpicked books curated just for your reading taste ✨
-            </p>
+  Handpicked books curated just for your reading taste ✨
+</p>
+
+<p className="text-sm text-purple-400 max-w-2xl mx-auto">
+  Recommended based on your favorite genres selected in your dashboard.
+</p>
           </motion.div>
 
           {/* Books Grid */}
