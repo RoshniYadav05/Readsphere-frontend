@@ -9,6 +9,7 @@ import Link from "next/link"
 import { BookOpen, ArrowLeft, Star } from "lucide-react"
 import MarkCompletedButton from "@/components/MarkCompletedButton"
 import ShelfButtons from "@/components/ShelfButtons"
+import LikeButton from "@/components/LikeButton"
 /* 🔹 CLIENT-ONLY BUBBLE BACKGROUND */
 import BubbleBackground from "./../bubble-bg"
 
@@ -114,10 +115,21 @@ export default async function BookPage({
                 {book.description}
               </p>
             )}
-             <div className="flex items-center gap-1 text-sm text-slate-300">
-                      {book.rating}
-                      <Star className="h-4 w-4 fill-yellow-500 text-yellow-500" />
-                    </div>
+             
+
+{/* ⭐ Rating + ❤️ Like Button */}
+<div className="flex items-center gap-4 text-sm text-slate-300">
+
+  <div className="flex items-center gap-1">
+    {book.rating}
+    <Star className="h-4 w-4 fill-yellow-500 text-yellow-500" />
+  </div>
+
+  {/* ❤️ LIKE BUTTON */}
+  <LikeButton bookId={book.id} />
+
+</div>
+
 
             {/* Action Buttons */}
             <div className="flex flex-wrap gap-4 pt-4">

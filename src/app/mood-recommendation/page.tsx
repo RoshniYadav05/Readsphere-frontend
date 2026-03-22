@@ -16,8 +16,6 @@ type Book = {
   slug: string
 }
 
-/* SAME animation structure as requirements page */
-
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
@@ -32,48 +30,24 @@ const cardVariants = {
 }
 
 const emotionGenreMap: Record<string, string[]> = {
-  happy: ["Fiction", "Self-Help", "Fantasy", "Romance", "Dystopian", "Science Fiction", "Young Adult","Biography", "Historical Fiction"],
-  sad: ["Biography", "Motivational", "Self-Help", "Young Adult", "Dystopian", "Historical Fiction"],
-  relaxed: ["Fantasy", "Fiction", "Literary Fiction", "Science Fiction", "Business", "Historical Fiction"
-    ,"Self Help",
-    "Engineering",
-    "Science",
-    "Biography",
-    "Civil/Mechanical Engineering",
-    "Business",
-    "Software Engineering",
-    "Motivational",
-    "Autobiography", "Science Fiction", "Computer Science", "Computer Engineering", "Mechanical Engineering", "Biography"
+  happy: ["Fiction", "Self-Help", "Fantasy", "Romance", "Dystopian", "Science Fiction", "Young Adult","Biography", "Historical Fiction", "Indian Literature", "Business", "Motivational", "Autobiography", "Computer Science", "Computer Engineering", "Mechanical Engineering"],
+  sad: ["Biography", "Motivational", "Self-Help", "Young Adult", "Dystopian", "Historical Fiction", "Psychology", "Philosophy", "True Crime", "Gothic Fiction", "Horror", "Literary Fiction", "Indian Literature", "Science Fiction"],
+  relaxed: ["Fantasy", "Fiction", "Literary Fiction", "Science Fiction", "Business", "Historical Fiction", "Indian Literature"
+    ,"Self Help","Engineering","Science","Biography","Civil/Mechanical Engineering","Business",
+    "Software Engineering","Motivational","Autobiography","Science Fiction","Computer Science",
+    "Computer Engineering","Mechanical Engineering","Biography"
   ],
   angry: ["Psychology", "Philosophy"],
-  stressed: ["Self-Help", "Young Adult", "Psychology", "Biography", "Historical Fiction"],
-  curious: ["Science", "Technology", "Historic", "Mystery", "True Crime", "Dystopian", "Science Fiction" ,"Computer Science", "Biography", "Historical Fiction"],
+  stressed: ["Self-Help", "Young Adult", "Psychology", "Biography", "Historical Fiction", "Business", "Motivational", "Autobiography", "Science Fiction", "Computer Science", "Computer Engineering", "Mechanical Engineering", "Indian Literature"],
+  curious: ["Science", "Technology", "Historic", "Mystery", "True Crime", "Dystopian", "Science Fiction" ,"Computer Science", "Biography", "Historical Fiction", "Indian Literature"],
   motivated: [
-    "Business",
-    "Self Help",
-    "Engineering",
-    "Science",
-    "Biography",
-    "Civil/Mechanical Engineering",
-    "Business",
-    "Software Engineering",
-    "Motivational",
-    "Autobiography", "Science Fiction", 
-    "Computer Science", "Computer Engineering", 
-    "Mechanical Engineering",
-    "Historic"
+    "Business","Self Help","Engineering","Science","Biography","Civil/Mechanical Engineering",
+    "Business","Software Engineering","Motivational","Autobiography","Science Fiction",
+    "Computer Science","Computer Engineering","Mechanical Engineering","Historic"
   ],
   tired: [
-    "Fiction",
-    "Horror",
-    "Historical Fiction",
-    "Science Fiction",
-    "Gothic Fiction",
-    "Young Adult",
-    "Historic",
-    "Literary Fiction",
-    "Fantasy",
-    "Dystopian",
+    "Fiction","Horror","Historical Fiction","Science Fiction","Gothic Fiction",
+    "Young Adult","Historic","Literary Fiction","Fantasy","Dystopian",
   ],
   excited: ["Adventure", "Fantasy", "Fiction", "Dystopian", "Mystery", "Science Fiction"],
 }
@@ -99,6 +73,9 @@ export default function MoodRecommendation() {
   const [loading, setLoading] = useState(false)
   const [userMoodText, setUserMoodText] = useState("")
 
+  // ✅ NEW STATE (IMPORTANT)
+  const [inputType, setInputType] = useState<"text" | "emoji" | null>(null)
+
   const fetchBooks = async (emotion: string) => {
 
     setSelectedEmotion(emotion)
@@ -110,61 +87,25 @@ export default function MoodRecommendation() {
       .from("books")
       .select("*")
       .in("genre", genres)
-      .range(0, 49); // first 50 books
+      .range(0, 49);
 
     setBooks(data || [])
     setLoading(false)
   }
 
 const moodKeywords: Record<string, string[]> = {
-  happy: [
-    "happy","good","great","awesome","joy","joyful","glad","pleased",
-    "content","cheerful","delighted","positive","nice","fantastic","amazing"
-  ],
-
-  sad: [
-    "sad","depressed","unhappy","down","lonely","heartbroken",
-    "cry","miserable","hopeless","gloomy","melancholy","blue","tear","sorrow"
-  ],
-
-  relaxed: [
-    "relaxed","calm","peaceful","chill","comfortable","quiet",
-    "restful","laid back","serene","tranquil","unwind","stress-free"
-  ],
-
-  angry: [
-    "angry","mad","furious","annoyed","irritated","rage",
-    "frustrated","upset","resentful","enraged","outraged","fuming","cross"
-  ],
-
-  stressed: [
-    "stressed","anxious","overwhelmed","pressure","burnout",
-    "worried","tension","panic","nervous","uneasy","tense","strained"
-  ],
-
-  curious: [
-    "curious","interested","learning","explore","discover",
-    "understand","study","research","knowledge"
-  ],
-
-  motivated: [
-    "motivated","productive","focused","goal","achieve",
-    "improve","success","work hard","discipline"
-  ],
-
-  tired: [
-    "tired","sleepy","exhausted","fatigue","drained",
-    "low energy","rest","nap","bed","yawn","weary","burnt out"
-  ],
-
-  excited: [
-    "excited","thrilled","pumped","energized","can't wait",
-    "amazing","celebration","achievement","joy","over the moon","stoked","ecstatic","elated"
-  ]
+  happy: ["happy","good","great","awesome","joy","joyful","glad","pleased","content","cheerful","delighted","positive","nice","fantastic","amazing"],
+  sad: ["sad","depressed","unhappy","down","lonely","heartbroken","cry","miserable","hopeless","gloomy","melancholy","blue","tear","sorrow"],
+  relaxed: ["relaxed","calm","peaceful","chill","comfortable","quiet","restful","laid back","serene","tranquil","unwind","stress-free"],
+  angry: ["angry","mad","furious","annoyed","irritated","rage","frustrated","upset","resentful","enraged","outraged","fuming","cross"],
+  stressed: ["stressed","anxious","overwhelmed","pressure","burnout","worried","tension","panic","nervous","uneasy","tense","strained"],
+  curious: ["curious","interested","learning","explore","discover","understand","study","research","knowledge","adventure","inquisitive","wonder","fascinated"],
+  motivated: ["motivated","productive","focused","goal","achieve","improve","success","work hard","discipline"],
+  tired: ["tired","sleepy","exhausted","fatigue","drained","low energy","rest","nap","bed","yawn","weary","burnt out"],
+  excited: ["excited","thrilled","pumped","energized","can't wait","amazing","celebration","achievement","joy","over the moon","stoked","ecstatic","elated","enthusiastic","eager","delighted","exhilarated","on cloud nine","adventure"]
 }
 
-
-  const detectMood = () => {
+const detectMood = () => {
 
   const text = userMoodText.toLowerCase()
 
@@ -187,6 +128,7 @@ const moodKeywords: Record<string, string[]> = {
   })
 
   if (bestMood) {
+    setInputType("text") // ✅ IMPORTANT
     fetchBooks(bestMood)
   } else {
     alert("Couldn't understand mood. Try describing how you feel.")
@@ -205,8 +147,6 @@ const moodKeywords: Record<string, string[]> = {
         variants={containerVariants}
       >
 
-        {/* Header (same as requirements page) */}
-
         <motion.div
           className="text-center space-y-4"
           initial={{ opacity: 0, y: -20 }}
@@ -216,11 +156,9 @@ const moodKeywords: Record<string, string[]> = {
 
           <div className="flex justify-center items-center gap-2">
             <BookOpen className="h-8 w-8 text-purple-400" />
-
             <h1 className="text-4xl md:text-5xl font-bold text-white">
               Mood Based Recommendations
             </h1>
-
           </div>
 
           <p className="text-lg text-slate-400 max-w-3xl mx-auto">
@@ -229,30 +167,26 @@ const moodKeywords: Record<string, string[]> = {
 
         </motion.div>
 
-        {/* Main Card */}
-
         <motion.div
           className="bg-slate-900/60 border border-slate-800 rounded-xl p-8 shadow-lg shadow-purple-500/20"
           variants={cardVariants}
           whileHover={{ y: -5, boxShadow: "0 20px 30px -10px rgba(124, 58, 237, 0.35)" }}
         >
 
-          {/* TEXT MOOD INPUT */}
-
           <div className="flex justify-center gap-3 mb-10">
 
             <input
-  type="text"
-  placeholder="Describe your mood (e.g. I feel stressed today)"
-  value={userMoodText}
-  onChange={(e)=>setUserMoodText(e.target.value)}
-  onKeyDown={(e)=>{
-    if(e.key === "Enter"){
-      detectMood()
-    }
-  }}
-  className="px-4 py-2 rounded bg-slate-800 text-white w-full max-w-xl"
-/>
+              type="text"
+              placeholder="Describe your mood (e.g. I feel stressed today)"
+              value={userMoodText}
+              onChange={(e)=>setUserMoodText(e.target.value)}
+              onKeyDown={(e)=>{
+                if(e.key === "Enter"){
+                  detectMood()
+                }
+              }}
+              className="px-4 py-2 rounded bg-slate-800 text-white w-full max-w-xl"
+            />
 
             <button
               onClick={detectMood}
@@ -263,14 +197,15 @@ const moodKeywords: Record<string, string[]> = {
 
           </div>
 
-          {/* Emoji Selector */}
-
           <div className="flex flex-wrap justify-center gap-6 text-4xl mb-12">
 
             {emotions.map((e) => (
               <button
                 key={e.key}
-                onClick={() => fetchBooks(e.key)}
+                onClick={() => {
+                  setInputType("emoji") // ✅ IMPORTANT
+                  fetchBooks(e.key)
+                }}
                 title={e.label}
                 className="hover:scale-125 transition"
               >
@@ -279,8 +214,6 @@ const moodKeywords: Record<string, string[]> = {
             ))}
 
           </div>
-
-          {/* Selected Emotion */}
 
           {selectedEmotion && (
 
@@ -291,9 +224,12 @@ const moodKeywords: Record<string, string[]> = {
             >
 
               <h2 className="text-2xl font-semibold">
-
-                Because you're feeling {emotions.find(e=>e.key===selectedEmotion)?.emoji}
-
+                Because you're feeling{" "}
+                {
+                  inputType === "text"
+                    ? userMoodText   // ✅ TEXT SHOW
+                    : emotions.find(e=>e.key===selectedEmotion)?.emoji // ✅ EMOJI SHOW
+                }
               </h2>
 
               <p className="text-purple-400 mt-2">
@@ -304,13 +240,9 @@ const moodKeywords: Record<string, string[]> = {
 
           )}
 
-          {/* Loading */}
-
           {loading && (
             <p className="text-gray-400 text-center">Finding books for your mood...</p>
           )}
-
-          {/* Books Grid */}
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
 

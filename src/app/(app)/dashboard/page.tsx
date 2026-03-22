@@ -4,6 +4,8 @@
 import { useEffect, useState } from "react"
 import { motion } from "framer-motion"
 import { BookOpen, Target, Heart, Clock } from "lucide-react"
+import Link from "next/link"
+
 import { useUser } from "@clerk/nextjs"
 import { createClient } from "@/utils/supabase/client"
 import {
@@ -92,6 +94,15 @@ export default function Dashboard() {
   console.log("Sessions:", sessions)
   const [streak, setStreak] = useState(0)
 
+const [todaySummary, setTodaySummary] = useState({
+  minutes: 0,
+  books: 0,
+  sessions: 0
+})
+
+const [insights, setInsights] = useState<string[]>([])
+
+const [readingDNA, setReadingDNA] = useState<string>("")
   const storageKey = user ? `readsphere-dashboard-${user.id}` : null
 
   // 📥 Load user-specific data (WITH MIGRATION FIX)
@@ -255,6 +266,114 @@ useEffect(() => {
 
   fetchSessions()
 }, [user])
+
+
+// 🔥 TODAY SUMMARY LOGIC
+useEffect(() => {
+  if (!sessions.length) return
+
+  const today = new Date().toLocaleDateString("en-CA")
+
+  const todaySessions = sessions.filter(
+    (s) => s.reading_date === today
+  )
+
+  const totalMinutes = todaySessions.reduce(
+    (sum, s) => sum + (s.duration_minutes || 0),
+    0
+  )
+
+  const uniqueBooks = new Set(
+    todaySessions.map((s) => s.book_title)
+  )
+
+  setTodaySummary({
+    minutes: totalMinutes,
+    books: uniqueBooks.size,
+    sessions: todaySessions.length
+  })
+
+}, [sessions])
+
+// 🧬 READING DNA LOGIC
+useEffect(() => {
+  if (!sessions.length) return
+
+  // total reading time
+  const totalMinutes = sessions.reduce(
+    (sum, s) => sum + (s.duration_minutes || 0),
+    0
+  )
+
+  const avgTime = totalMinutes / sessions.length
+
+  const genres = data?.favoriteGenres || []
+
+  let dna = ""
+
+  if (genres.includes("Fantasy") || genres.includes("Science Fiction")) {
+    dna = "Explorer 🚀 (Adventure + Sci-Fi Lover)"
+  } 
+  else if (genres.includes("Psychology") || genres.includes("Philosophy")) {
+    dna = "Deep Thinker 🧠 (Psychology & Philosophy)"
+  } 
+  else if (genres.includes("Business") || genres.includes("Self Help")) {
+    dna = "Achiever 🔥 (Growth & Success Books)"
+  } 
+  else {
+    dna = "Balanced Reader 📚"
+  }
+
+  if (avgTime > 40) {
+    dna += " • Deep Reader"
+  } else if (avgTime < 15) {
+    dna += " • Quick Reader"
+  }
+
+  setReadingDNA(dna)
+
+}, [sessions, data])
+
+// 🧠 INSIGHTS LOGIC
+useEffect(() => {
+  if (!sessions.length) return
+
+  // avg session
+  const avg =
+    sessions.reduce((sum, s) => sum + (s.duration_minutes || 0), 0) /
+    sessions.length
+
+  // favorite book
+  const bookCount: Record<string, number> = {}
+
+  sessions.forEach((s) => {
+    const book = s.book_title || "Unknown"
+    bookCount[book] = (bookCount[book] || 0) + 1
+  })
+
+  const favBook = Object.keys(bookCount).reduce((a, b) =>
+    bookCount[a] > bookCount[b] ? a : b
+  )
+
+  // time pattern
+  const nightReads = sessions.filter((s) => {
+    const hour = new Date(s.start_time).getHours()
+    return hour >= 20
+  })
+
+  const insightsArr = [
+    `Avg session: ${Math.round(avg)} min`,
+    `Favorite book: ${favBook}`,
+  ]
+
+  if (nightReads.length > sessions.length / 2) {
+    insightsArr.push("You read more at night 🌙")
+  }
+
+  setInsights(insightsArr)
+
+}, [sessions])
+
 
 // 🔥 CALCULATE STREAK
 useEffect(() => {
@@ -630,6 +749,122 @@ const getActivityLevel = (date: string) => {
             </Card>
           </motion.div>
         </motion.div>
+
+
+{/* 🔥 READING DNA */}
+<motion.div variants={cardVariants}>
+  <Card className="bg-slate-900/60 border border-slate-800 rounded-xl shadow-lg shadow-purple-500/20">
+
+    <CardHeader>
+      <CardTitle className="text-white flex items-center gap-2">
+        🧬 Your Reading DNA
+      </CardTitle>
+
+      <CardDescription className="text-slate-400">
+        Your unique reading personality based on your activity
+      </CardDescription>
+    </CardHeader>
+
+    <CardContent>
+      <p className="text-xl font-semibold text-purple-400">
+        {readingDNA || "Analyzing your reading behavior..."}
+      </p>
+
+      <p className="text-slate-400 mt-2 text-sm">
+        Based on your favorite genres, reading habits, and activity patterns
+      </p>
+    </CardContent>
+
+  </Card>
+</motion.div>
+
+
+
+
+{/* 🔥 INSIGHTS + TODAY SIDE BY SIDE */}
+<motion.div
+  className="grid grid-cols-1 md:grid-cols-2 gap-6"
+  variants={containerVariants}
+>
+
+  {/* 🧠 INSIGHTS */}
+  <motion.div variants={cardVariants}>
+    <Card className="bg-slate-900/60 border border-slate-800 rounded-xl">
+
+      <CardHeader>
+        <CardTitle className="text-white">
+          🧠 Your Reading Insights
+        </CardTitle>
+      </CardHeader>
+
+      <CardContent className="space-y-2">
+        {insights.map((i, idx) => (
+          <p key={idx} className="text-purple-400">
+            ✔ {i}
+          </p>
+        ))}
+      </CardContent>
+
+    </Card>
+  </motion.div>
+
+
+  {/* 📊 TODAY SUMMARY */}
+  <motion.div variants={cardVariants}>
+    <Card className="bg-slate-900/60 border border-slate-800 rounded-xl shadow-lg">
+
+      <CardHeader>
+        <CardTitle className="text-white">
+          📊 Today’s Reading
+        </CardTitle>
+      </CardHeader>
+
+      <CardContent className="flex justify-between text-center">
+
+        <div>
+          <p className="text-2xl font-bold text-purple-400">
+            {todaySummary.minutes}
+          </p>
+          <p className="text-sm text-slate-400">Minutes</p>
+        </div>
+
+        <div>
+          <p className="text-2xl font-bold text-purple-400">
+            {todaySummary.books}
+          </p>
+          <p className="text-sm text-slate-400">Books</p>
+        </div>
+
+        <div>
+          <p className="text-2xl font-bold text-purple-400">
+            {todaySummary.sessions}
+          </p>
+          <p className="text-sm text-slate-400">Sessions</p>
+        </div>
+
+      </CardContent>
+
+    </Card>
+  </motion.div>
+
+</motion.div>
+
+<div className="flex justify-center mt-6">
+  <Link href="/reading-history">
+    <button
+      className="px-6 py-3 rounded-xl font-semibold text-white shadow-lg
+      bg-gradient-to-r from-purple-600 to-indigo-500
+      hover:from-purple-700 hover:to-indigo-600
+      hover:scale-105 hover:shadow-purple-500/40
+      transition-all duration-300"
+    >
+      📚 View Reading History
+    </button>
+  </Link>
+</div>
+
+
+
 
         {/* Graph */}
         <motion.div variants={cardVariants}>
