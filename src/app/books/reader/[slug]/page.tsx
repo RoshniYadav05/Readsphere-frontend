@@ -1,10 +1,5 @@
 //src/app/books/reader/[slug]/page.tsx
-import dynamic from "next/dynamic"
-
-const ReaderClient = dynamic(
-  () => import("./ReaderClient"),
-  { ssr: false }
-)
+import ReaderClient from "./ReaderClient"
 import { createClient } from '@/utils/supabase/server'
 import { cookies } from 'next/headers'
 import BookTracker from '../../[slug]/BookTracker'
