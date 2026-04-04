@@ -1,3 +1,4 @@
+//src/app/(app)/reading-history/page.tsx
 "use client"
 
 import { useEffect, useState } from "react"
@@ -118,8 +119,8 @@ export default function ReadingHistory() {
 
                     const start = new Date(s.start_time)
                     const end = new Date(
-                      start.getTime() + s.duration_minutes * 60000
-                    )
+  start.getTime() + Number(s.duration_minutes) * 60000
+)
 
                     return (
                       <div
@@ -136,9 +137,11 @@ export default function ReadingHistory() {
 
                           {/* Duration */}
                           <p className="text-purple-400 font-semibold flex items-center gap-1">
-                            <Clock className="h-4 w-4" />
-                            {s.duration_minutes} min
-                          </p>
+  <Clock className="h-4 w-4" />
+  {s.duration_minutes < 1
+    ? "< 1 min"
+    : `${Number(s.duration_minutes).toFixed(1)} min`}
+</p>
 
                         </div>
 

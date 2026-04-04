@@ -17,8 +17,11 @@ export default function BookTracker({
   const pathname = usePathname();
   const { user } = useUser();
 
-  const startTimeRef = useRef<Date | null>(null);
+  const startTimeRef = useRef<number | null>(null);
   const sessionSavedRef = useRef(false);
+
+  // ✅ ADD THIS
+  const maxScrollRef = useRef(0);
 
   useEffect(() => {
 
@@ -26,52 +29,86 @@ export default function BookTracker({
 
     console.log("📚 Tracker started");
 
-    startTimeRef.current = new Date();
+    startTimeRef.current = Date.now();
     sessionSavedRef.current = false;
+    maxScrollRef.current = 0; // reset scroll
+
+    // ✅ ADD THIS SCROLL TRACKER
+    const handleScroll = () => {
+      const scrollTop = window.scrollY;
+      const docHeight =
+        document.documentElement.scrollHeight - window.innerHeight;
+
+      const percent = scrollTop / docHeight;
+
+      if (percent > maxScrollRef.current) {
+        maxScrollRef.current = percent;
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
 
     const saveSession = async () => {
 
       if (!startTimeRef.current) return;
       if (sessionSavedRef.current) return;
 
-      const startTime = startTimeRef.current;
-      const endTime = new Date();
+      const startTimeMs = startTimeRef.current;
+      const endTimeMs = Date.now();
 
-      const minutes = Math.max(
-        1,
-        Math.round(
-          (endTime.getTime() - startTime.getTime()) / 60000
-        )
-      );
+      const diffMs = endTimeMs - startTimeMs;
 
-      console.log("📚 Saving reading session...");
+      // ignore ultra short sessions
+      if (diffMs < 5000) return;
+
+      const minutes = Number((diffMs / 60000).toFixed(2));
+
+      const startTime = new Date(startTimeMs);
+      const endTime = new Date(endTimeMs);
+
+      // ✅ ADD PAGE CALCULATION HERE
+      const totalHeight =
+  document.documentElement.scrollHeight;
+
+const viewportHeight = window.innerHeight;
+
+const totalPages = Math.ceil(
+  totalHeight / viewportHeight
+);
+
+const estimatedPages = Math.max(
+  1,
+  Math.ceil(maxScrollRef.current * totalPages)
+);
+
+      console.log("📚 Saving:", minutes, "minutes", estimatedPages, "pages");
 
       const { error } = await supabase
         .from("reading_sessions")
         .insert({
-  user_id: user.id,
-  book_id: bookId,
-  book_title: bookTitle,
+          user_id: user.id,
+          book_id: bookId,
+          book_title: bookTitle,
 
           reading_date: startTime.toLocaleDateString("en-CA", {
             timeZone: "Asia/Kolkata",
           }),
 
           start_time: startTime.toLocaleString("sv-SE", {
-  timeZone: "Asia/Kolkata",
-}),
-end_time: endTime.toLocaleString("sv-SE", {
-  timeZone: "Asia/Kolkata",
-}),
+            timeZone: "Asia/Kolkata",
+          }),
 
-          pages_read: 1,
+          end_time: endTime.toLocaleString("sv-SE", {
+            timeZone: "Asia/Kolkata",
+          }),
+
+          // ✅ REPLACED
+          pages_read: estimatedPages,
+
           duration_minutes: minutes,
         });
 
-      if (error) {
-        console.log("❌ DB ERROR:", error);
-      } else {
-        console.log("✅ Reading session saved");
+      if (!error) {
         sessionSavedRef.current = true;
       }
 
@@ -87,6 +124,9 @@ end_time: endTime.toLocaleString("sv-SE", {
     return () => {
       saveSession();
       window.removeEventListener("beforeunload", handleBeforeUnload);
+
+      // ✅ CLEANUP SCROLL
+      window.removeEventListener("scroll", handleScroll);
     };
 
   }, [bookTitle, pathname, user]);

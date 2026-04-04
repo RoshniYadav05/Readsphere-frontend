@@ -13,6 +13,7 @@ import LikeButton from "@/components/LikeButton"
 /* 🔹 CLIENT-ONLY BUBBLE BACKGROUND */
 import BubbleBackground from "./../bubble-bg"
 
+
 type Book = {
   id: string
   book_title: string
@@ -23,6 +24,7 @@ type Book = {
   description: string | null
   rating: number
 }
+export const revalidate = 3600
 export async function generateMetadata({
   params,
 }: {
@@ -69,11 +71,7 @@ export default async function BookPage({
       <BubbleBackground/>
       <div className="max-w-6xl mx-auto space-y-12">
 
-        {/* ✅ BOOK OPEN TRACKING */}
-        <BookTracker 
-  bookId={book.id}
-  bookTitle={book.book_title}
-/>
+        
 
         {/* Header */}
         <div className="text-center space-y-4">

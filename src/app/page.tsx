@@ -1,3 +1,4 @@
+//src/app/page.tsx
 "use client"
 
 import Link from "next/link"
@@ -203,14 +204,14 @@ export default function Home() {
               </p>
               <div className="flex flex-wrap justify-center gap-4">
                 <Button size="lg" className="bg-white text-[#050A1A] hover:bg-white/10 px-8 py-6 text-lg">
-                  <Link href="/requirements">Get Started</Link>
+                  <Link href="/requirements" prefetch>Get Started</Link>
                 </Button>
                 <Button
                   size="lg"
                   variant="outline"
                   className="text-black hover:bg-white/10 px-8 py-6 text-lg"
                 >
-                  <Link href="/how-it-works">Learn More</Link>
+                  <Link href="/how-it-works" prefetch>Learn More</Link>
                 </Button>
               </div>
             </motion.div>
@@ -244,7 +245,7 @@ export default function Home() {
         Let ReadSphere recommend the perfect book based on your current mood.
       </p>
 
-      <Link href="/mood-recommendation">
+      <Link href="/mood-recommendation" prefetch>
         <Button
           size="lg"
           className="bg-purple-600 hover:bg-purple-700 px-8 py-6 text-lg"
@@ -299,7 +300,7 @@ export default function Home() {
             ))}
           </div>
           <div className="mt-12 text-center">
-            <Link href="/books">
+            <Link href="/books" prefetch>
               <Button variant="outline" className="border-purple-500 text-purple-400 hover:bg-purple-400 hover:text-slate-900 hover:border-slate-950">
                 View All Trending Books
               </Button>

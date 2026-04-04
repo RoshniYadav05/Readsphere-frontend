@@ -21,6 +21,7 @@ export default function ReaderClient({ pdfUrl, slug }: Props) {
   const startRef = useRef<number | null>(null);
   const accumulatedRef = useRef<number>(0);
   const visibilityRef = useRef<boolean>(true);
+  const maxScrollRef = useRef(0);
 
   const router = useRouter();
   const supabase = createClient();
@@ -141,6 +142,36 @@ export default function ReaderClient({ pdfUrl, slug }: Props) {
     };
 
   }, []);
+
+
+
+  // -------------------------------
+// 📌 SCROLL PAGE TRACKING
+// -------------------------------
+useEffect(() => {
+
+  const handleScroll = () => {
+
+    const scrollTop = window.scrollY;
+
+    const docHeight =
+      document.documentElement.scrollHeight - window.innerHeight;
+
+    const percent = scrollTop / docHeight;
+
+    if (percent > maxScrollRef.current) {
+      maxScrollRef.current = percent;
+    }
+
+  };
+
+  window.addEventListener("scroll", handleScroll);
+
+  return () => {
+    window.removeEventListener("scroll", handleScroll);
+  };
+
+}, []);
 
   // -------------------------------
   // 📌 3. PROGRESS TRACKING

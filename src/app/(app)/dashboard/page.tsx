@@ -80,6 +80,7 @@ const GENRE_OPTIONS = [
   "Technology",
 ]
 
+
 export default function Dashboard() {
 
   const { user, isLoaded } = useUser()
