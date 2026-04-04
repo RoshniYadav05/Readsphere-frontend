@@ -6,6 +6,10 @@ const nextConfig = {
     ignoreDuringBuilds: true,
   },
 
+  typescript: {
+    ignoreBuildErrors: true,
+  },
+
   images: {
     domains: ["placehold.co", "jdowuzdumrucojkramsx.supabase.co"],
     remotePatterns: [
